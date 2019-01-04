@@ -82,7 +82,7 @@ function check() {
     if (cpf) {
         $.ajax({
             method: "GET",
-            url: "/blacklist/consulta.php",
+            url: "/consulta",
             data: { cpf: cpf}
         })
             .success(function( msg ) {

@@ -11,6 +11,10 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="js/functions.js"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
+    
+    <!-- Sweet Alert -->
+        <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+        <link href="{{ asset('plugins/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <div class="container-fluid">
@@ -20,7 +24,7 @@
             <h3>Digite o CPF que deseja consultar:</h3>
             <form class="form-inline" id="formCpf" action="#">
                 <div class="form-group">
-                    <label for="txtCpf" class="control-label">CPF: <input type="text" name="txtCpf" id="txtCpf" maxlength="14"
+                    <label for="txtCpf" class="control-label">CPF: <input type="text" name="txtCpf" id="txtCpf"
                                                             class="cpf form-control" required="required"/></label>
                     <span class="badge" id="badge"></span>
                 </div>
@@ -50,7 +54,20 @@
         $('.cpf').mask('000.000.000-00', {reverse: true});
         $('#btnVerifica').on("click", function (e) {
             (e).preventDefault();
-            check();
+            if($("#txtCpf").val().length < 14){
+                swal({
+                        title: 'Atenção!',
+                        type: 'info',
+                        html: 'CPF Invalido!<br/> Numero de caracteres menor.',
+                        showCloseButton: true,
+                        showCancelButton: false,
+                        focusConfirm: false
+                    });
+                $("#txtCpf").val("");
+            }else{
+                
+                check();
+            }
         });
         clearElement('badge');
         clearElement('reqMessage');
