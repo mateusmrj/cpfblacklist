@@ -1,105 +1,113 @@
-function addFreeBadge(element_id) {
-    document.querySelector("#" + element_id).innerHTML = "FREE";
-    document.querySelector("#" + element_id).classList.add("free");
-    document.querySelector("#" + element_id).classList.remove("block", "invisible");
-}
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
 
-function addBlockBadge(element_id) {
-    document.querySelector("#" + element_id).innerHTML = "BLOCK";
-    document.querySelector("#" + element_id).classList.add("block");
-    document.querySelector("#" + element_id).classList.remove("free", "invisible");
-}
+$('#btnVerifica').on("click", function (e) {
+    (e).preventDefault();
+    if ($("#txtCpf").val().length < 14) {
+        swal({
+            title: 'Atenção!',
+            type: 'info',
+            html: 'CPF Invalido!<br/> Numero de caracteres menor que o requerido.',
+            showCloseButton: true,
+            showCancelButton: false,
+            focusConfirm: false
+        });
+        $("#txtCpf").val("");
+    } else {
 
-function clearElement(element_id) {
-    document.querySelector("#" + element_id).innerHTML = "";
-    document.querySelector("#" + element_id).classList.remove("block", "free");
-    document.querySelector("#" + element_id).classList.add("invisible");
-}
+        check();
+    }
+});
 
-function setDisabled(element_id) {
-    document.querySelector("#" + element_id).disabled = true;
-}
+$('#blockCpf').click(function (e) {
+    e.preventDefault();
 
-function setEnabled(element_id) {
-    document.querySelector("#" + element_id).disabled = false;
-}
-
-function add() {
-    let cpf = document.querySelector("#txtCpf").value;
-
+    let cpf = $("#txtCpf").val();
     $.ajax({
-        method: "POST",
-        url: "/blacklist/incluir.php",
-        data: { cpf: cpf}
-    })
-    .success(function( msg ) {
-        let json_msg = JSON.parse(msg);
-        if (json_msg.status == "error") {
-            setDisabled('free');
-            setDisabled('block');
-            addBlockBadge('badge');
-            document.querySelector("#reqMessage").classList.add("danger");
-        } else {
-            setEnabled('free');
-            setDisabled('block');
-            addBlockBadge('badge');
-            document.querySelector("#reqMessage").classList.add("success");
+        url: "/adicionar",
+        type: "get",
+        data: {'cpf': cpf},
+        dataType: "json",
+        success: function (response) {
+            swal("OK!", "CPF<br>" + response.cpf + "<br>adicionado a blacklist", "success");
+            $('#freeCpf').hide();
+            $('#blockCpf').hide();
+            $("#txtCpf").val("");
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            swal({
+                title: 'Atenção!',
+                type: 'info',
+                html: '<b>Ops!</b> Tente novamente ou reporte este erro (' + errorThrown + ').',
+                showCloseButton: true,
+                showCancelButton: false,
+                focusConfirm: false
+            });
         }
-
-        document.querySelector("#reqMessage").innerHTML = json_msg.content;
     });
-}
+});
 
-function remove() {
-    let cpf = document.querySelector("#txtCpf").value;
+$('#freeCpf').click(function (e) {
+    e.preventDefault();
 
+    let cpf = $("#txtCpf").val();
     $.ajax({
-        method: "POST",
-        url: "/blacklist/remover.php",
-        data: { cpf: cpf}
-    })
-    .success(function( msg ) {
-        let json_msg = JSON.parse(msg);
-        if (json_msg.status == "error") {
-            setDisabled('free');
-            setDisabled('block');
-            addBlockBadge('badge');
-            document.querySelector("#reqMessage").classList.add("danger");
-        } else {
-            setEnabled('block');
-            setDisabled('free');
-            addFreeBadge('badge');
-            document.querySelector("#reqMessage").classList.add("success");
+        url: "/remover",
+        type: "get",
+        data: {'cpf': cpf},
+        dataType: "json",
+        success: function (response) {
+            swal("OK!", "CPF<br>" + response.cpf + "<br>removido da blacklist", "success");
+//                            location.reload();
+            $('#freeCpf').hide();
+            $('#blockCpf').hide();
+            $("#txtCpf").val("");
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            swal({
+                title: 'Atenção!',
+                type: 'info',
+                html: '<b>Ops!</b> Tente novamente ou reporte este erro (' + errorThrown + ').',
+                showCloseButton: true,
+                showCancelButton: false,
+                focusConfirm: false
+            });
         }
-
-        document.querySelector("#reqMessage").innerHTML = json_msg.content;
     });
-}
+});
 
 function check() {
-    let cpf = document.querySelector("#txtCpf").value;
+    let cpf = $("#txtCpf").val();
+    $.ajax({
+        url: "/consulta",
+        type: "get",
+        data: {'cpf': cpf},
+        dataType: "json",
+        success: function (response) {
+            //var msg = response;
+            //console.log(msg[0]["cpf"]);]
+            if (response.data.status == 1) {
+                $('#freeCpf').show();
+                $('#blockCpf').hide();
+            } else {
+                $('#blockCpf').show();
+                $('#freeCpf').hide();
+            }
+            swal("" + response.data.description + "", "CPF<br>" + response.data.cpf + "", "success");
 
-    if (cpf) {
-        $.ajax({
-            method: "GET",
-            url: "/consulta",
-            data: { cpf: cpf}
-        })
-            .success(function( msg ) {
-                let json_msg = JSON.parse(msg);
-                if (json_msg.status == "error") {
-                    setDisabled('free');
-                    setDisabled('block');
-                    addBlockBadge('badge');
-                    document.querySelector("#reqMessage").classList.add("danger");
-                } else {
-                    setEnabled('block');
-                    setDisabled('free');
-                    addFreeBadge('badge');
-                    document.querySelector("#reqMessage").classList.add("success");
-                }
-
-                document.querySelector("#reqMessage").innerHTML = json_msg.content;
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            swal({
+                title: 'Atenção!',
+                type: 'info',
+                html: '<b>Ops!</b> Tente novamente ou reporte este erro (' + errorThrown + ').',
+                showCloseButton: true,
+                showCancelButton: false,
+                focusConfirm: false
             });
-    }
+        }
+    });
 }

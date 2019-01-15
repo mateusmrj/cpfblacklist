@@ -10,4 +10,10 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    
+    function cleanCpf($cpf){
+        $clean_cpf = strip_tags(htmlentities($cpf));
+        $clean_cpf = preg_replace("/\D+/", "", $clean_cpf);
+        return str_pad($clean_cpf, 11, "0", STR_PAD_LEFT);
+    }
 }

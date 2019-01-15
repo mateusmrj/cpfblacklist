@@ -15,4 +15,6 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/consulta', 'BlacklistController@consulta');
+Route::get('/consulta', 'BlacklistController@consulta')->name('add');
+Route::get('/adicionar', 'BlacklistController@adicionar')->name('adiciona');
+Route::get('/remover', 'BlacklistController@remover')->name('remove');
